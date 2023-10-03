@@ -26,6 +26,3 @@ def get_catalog():
             }
         ]
 
-
-with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("FROM * SELECT "))
