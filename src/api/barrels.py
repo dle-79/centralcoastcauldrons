@@ -22,6 +22,15 @@ class Barrel(BaseModel):
 def post_deliver_barrels(barrels_delivered: list[Barrel]):
     """ """
     print(barrels_delivered)
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory;"))
+    
+    first_row = result.first()
+
+    if first_row.num_red_potions < 10 & first_row.gold > barrels_delivered[0].price:
+        with db.engine.begin() as connection:
+            connection.execute(sqlalchemy.text("UPDATE global_inventory SET gold = gold - " 
+            + str(barrels_delivered[0].price) + ", num_red_ml +"  + str(barrels_delivered[0].ml_per_barrel) + ";"))
     
     return "OK"
 
@@ -30,21 +39,14 @@ def post_deliver_barrels(barrels_delivered: list[Barrel]):
 def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     """ """
     print(wholesale_catalog)
-    with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT num_red_potions, gold FROM global_inventory"))
-    
-    first_row = result.first
 
-    if first_row.num_red_potions < 10 & first_row.gold > wholesale_catalog.price:
-        with db.engine.begin() as connection:
-            connection.execute(sqlalchemy.text("UPDATE global_inventory SET gold = gold - wholesale_catalog.price"))
 
 
 
     return [
         {
             "sku": "SMALL_RED_BARREL",
-            "quantity": 1,
+            "quantity": wholesale_catalog[0],
         }
     ]
 

@@ -15,10 +15,12 @@ class NewCart(BaseModel):
     customer: str
 
 
+cart_id = 1
 @router.post("/")
 def create_cart(new_cart: NewCart):
     """ """
-    return {"cart_id": 1}
+    cart_id += 1
+    return {"cart_id": cart_id}
 
 
 @router.get("/{cart_id}")
@@ -35,6 +37,14 @@ class CartItem(BaseModel):
 @router.post("/{cart_id}/items/{item_sku}")
 def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
     """ """
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text("SELECT num_red_potions FROM global_inventory"))
+    
+    if result > cart_item.quantity:
+        with db.engine.begin() as connection:
+            connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_red_potions = num_red_potions - " 
+            + str(cart_item.quantity)+ ";"))
+
 
     return "OK"
 
@@ -46,12 +56,9 @@ class CartCheckout(BaseModel):
 def checkout(cart_id: int, cart_checkout: CartCheckout):
     """ """
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT num_red_potions, gold FROM global_inventory"))
+        connection.execute(sqlalchemy.text("UPDATE global_inventory SET gold = gold + " 
+            + cart_checkout.payment + ";"))
     
-    first_row = result.first
 
-    if first_row.num_red_potions < 10 & first_row.gold > wholesale_catalog.price:
-        with db.engine.begin() as connection:
-            gold = connection.execute(sqlalchemy.text("UPDATE global_inventory SET gold = gold - wholesale_catalog.price"))
 
     return {"total_potions_bought": 1, "total_gold_paid": 50}
