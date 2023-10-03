@@ -16,9 +16,11 @@ class NewCart(BaseModel):
 
 
 cart_id = 1
+
 @router.post("/")
 def create_cart(new_cart: NewCart):
     """ """
+    global cart_id
     cart_id += 1
     return {"cart_id": cart_id}
 

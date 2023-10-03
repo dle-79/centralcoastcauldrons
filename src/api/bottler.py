@@ -23,7 +23,7 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory]):
     with db.engine.begin() as connection:
         redML = connection.execute(sqlalchemy.text("SELECT num_red_ml FROM global_inventory;"))
 
-    if 100 * potions_delivered[0].quantity > redML:
+    if 100 * potions_delivered[0].quantity > int(redML):
         with db.engine.begin() as connection:
             connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_red_ml = num_red_ml - " 
             + str(100 * potions_delivered[0].quantity) + ", num_red_potions = num_red_potions + "
@@ -41,7 +41,7 @@ def get_bottle_plan():
     with db.engine.begin() as connection:
         redML = connection.execute(sqlalchemy.text("SELECT num_red_ml FROM global_inventory;"))
     
-    bottle = redML//100
+    bottle = int(redML)//100
 
     # Each bottle has a quantity of what proportion of red, blue, and
     # green potion to add.
