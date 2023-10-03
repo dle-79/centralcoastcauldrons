@@ -12,7 +12,6 @@ router = APIRouter(
 
 class Barrel(BaseModel):
     sku: str
-
     ml_per_barrel: int
     potion_type: list[int]
     price: int
@@ -32,6 +31,16 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     """ """
     print(wholesale_catalog)
 
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text("SELECT num_red_potions, gold FROM global_inventory"))
+    
+    first_row = result.first
+
+    if first_row.num_red_potions < 10 & first_row.gold > wholesale_catalog.price:
+        with db.engine.begin() as connection:
+            gold = connection.execute(sqlalchemy.text("UPDATE global_inventory SET gold = gold - wholesale_catalog.price"))
+
+
     return [
         {
             "sku": "SMALL_RED_BARREL",
@@ -40,5 +49,3 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     ]
 
 
-with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("FROM * SELECT "))
