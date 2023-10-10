@@ -48,10 +48,8 @@ def post_deliver_barrels(barrels_delivered: list[Barrel]):
                 connection.execute(sqlalchemy.text("UPDATE global_inventory SET gold = gold - " 
                 + str(barrel.price) + ", num_blue_ml = num_blue_ml + "  + str(barrel.ml_per_barrel) + ";")
                 return "OK"
-        else:
-            return "Not enough gold"
+    return "Not enough gold"
 
-    return "OK"
     
 
 # Gets called once a day
