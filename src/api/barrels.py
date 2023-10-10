@@ -51,9 +51,6 @@ def post_deliver_barrels(barrels_delivered: list[Barrel]):
                 + str(barrel.price) + ", num_blue_ml = num_blue_ml + "  + str(barrel.ml_per_barrel) + ";")
             return "ok"
         
-
-    return "ok"
-
     
 
 # Gets called once a day
