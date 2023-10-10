@@ -79,26 +79,20 @@ def get_bottle_plan():
     # Initial logic: bottle all barrels into red potions.
     if red_bottle == 0 and green_bottle == 0 and blue_bottle == 0:
             return "no ml to bottle"
-    elif red_bottle > 0:
+    else:
         return [
                 {
                     "potion_type": [100, 0, 0, 0],
                     "quantity": red_bottle,
-                }
-            ]
-    elif green_bottle > 0:
-        return [
+                },
                 {
                     "potion_type": [0, 100, 0, 0],
                     "quantity": green_bottle,
-                }
-            ]
-    else:
-        return [
+                },
                 {
                     "potion_type": [0, 0, 100, 0],
                     "quantity": blue_bottle,
                 }
             ]
-
+  
     

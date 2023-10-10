@@ -33,22 +33,22 @@ def post_deliver_barrels(barrels_delivered: list[Barrel]):
         num_blue = result.first().num_blue_potions
 
     for barrel in barrels_delivered:
-        if num_red < 10 and gold > barrel.price and "RED" in barrel.sku:
+        if gold < barrel.price:
+            return "not enough gold"
+        if num_red < 10 and gold >= barrel.price and "RED" in barrel.sku:
             with db.engine.begin() as connection:
                 connection.execute(sqlalchemy.text("UPDATE global_inventory SET gold = gold - " 
                 + str(barrel.price) + ", num_red_ml = num_red_ml + "  + str(barrel.ml_per_barrel) + ";")
-                return "OK"
-        if num_green < 10 and gold > barrel.price and "GREEN" in barrel.sku:
+        if num_green < 10 and gold >= barrel.price and "GREEN" in barrel.sku:
             with db.engine.begin() as connection:
                 connection.execute(sqlalchemy.text("UPDATE global_inventory SET gold = gold - " 
                 + str(barrel.price) + ", num_green_ml = num_green_ml + "  + str(barrel.ml_per_barrel) + ";")
-                return "OK"
-        if num_blue < 10 and gold > barrel.price and "BLUE" in barrel.sku:
+        if num_blue < 10 and gold >= barrel.price and "BLUE" in barrel.sku:
             with db.engine.begin() as connection:
                 connection.execute(sqlalchemy.text("UPDATE global_inventory SET gold = gold - " 
                 + str(barrel.price) + ", num_blue_ml = num_blue_ml + "  + str(barrel.ml_per_barrel) + ";")
-                return "OK"
-    return "Not enough gold"
+
+    return "ok"
 
     
 
@@ -60,16 +60,21 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text("SELECT gold FROM global_inventory;"))
         gold = result.first().gold
+    
+
+    purchase = []
 
 
     for barrel in wholesale_catalog:
-        if barrel.price < gold:
-            return [
-                {
+        if barrel.price <= gold:
+            purchase.append({
                     "sku": barrel.sku,
                     "quantity": barrel.quantity,
-                }
-            ]
+                })
+    
+    return purchase
+                
+            
 
 
         
