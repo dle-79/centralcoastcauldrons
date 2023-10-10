@@ -39,14 +39,15 @@ def post_deliver_barrels(barrels_delivered: list[Barrel]):
             with db.engine.begin() as connection:
                 connection.execute(sqlalchemy.text("UPDATE global_inventory SET gold = gold - " 
                 + str(barrel.price) + ", num_red_ml = num_red_ml + "  + str(barrel.ml_per_barrel) + ";")
-        if num_green < 10 and gold >= barrel.price and "GREEN" in barrel.sku:
+        elif num_green < 10 and gold >= barrel.price and "GREEN" in barrel.sku:
             with db.engine.begin() as connection:
                 connection.execute(sqlalchemy.text("UPDATE global_inventory SET gold = gold - " 
                 + str(barrel.price) + ", num_green_ml = num_green_ml + "  + str(barrel.ml_per_barrel) + ";")
-        if num_blue < 10 and gold >= barrel.price and "BLUE" in barrel.sku:
+        else:
             with db.engine.begin() as connection:
                 connection.execute(sqlalchemy.text("UPDATE global_inventory SET gold = gold - " 
                 + str(barrel.price) + ", num_blue_ml = num_blue_ml + "  + str(barrel.ml_per_barrel) + ";")
+        
 
     return "ok"
 
