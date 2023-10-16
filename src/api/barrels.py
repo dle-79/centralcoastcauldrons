@@ -22,34 +22,49 @@ class Barrel(BaseModel):
 def post_deliver_barrels(barrels_delivered: list[Barrel]):
     """ """
     print(barrels_delivered)
-    with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT gold FROM global_inventory;"))
-        gold = result.first().gold
-        result = connection.execute(sqlalchemy.text("SELECT num_red_potions FROM global_inventory;"))
-        num_red = result.first().num_red_potions
-        result = connection.execute(sqlalchemy.text("SELECT num_green_potions FROM global_inventory;"))
-        num_green = result.first().num_green_potions
-        result = connection.execute(sqlalchemy.text("SELECT num_blue_potions FROM global_inventory;"))
-        num_blue = result.first().num_blue_potions
+    
+    gold = 0
+    red_ml = 0
+    green_ml = 0
+    blue_ml = 0
+    dark_ml = 0
 
     for barrel in barrels_delivered:
-        if gold < barrel.price:
-            return "not enough gold"
-        elif num_red < 10 and gold >= barrel.price and "RED" in barrel.sku:
-            with db.engine.begin() as connection:
-                connection.execute(sqlalchemy.text("UPDATE global_inventory SET gold = gold - " 
-                + str(barrel.price) + ", num_red_ml = num_red_ml + "  + str(barrel.ml_per_barrel) + ";")
-        elif num_green < 10 and gold >= barrel.price and "GREEN" in barrel.sku:
-            with db.engine.begin() as connection:
-                connection.execute(sqlalchemy.text("UPDATE global_inventory SET gold = gold - " 
-                + str(barrel.price) + ", num_green_ml = num_green_ml + "  + str(barrel.ml_per_barrel) + ";")
-        elif num_blue < 10 and gold >= barrel.price and "BLUE" in barrel.sku:
-            with db.engine.begin() as connection:
-                connection.execute(sqlalchemy.text("UPDATE global_inventory SET gold = gold - " 
-                + str(barrel.price) + ", num_blue_ml = num_blue_ml + "  + str(barrel.ml_per_barrel) + ";")
+        gold_paid += barrel.price*barrel.quantity
+        if barrel.potion_type == [1, 0, 0, 0]:
+            red_ml += barrel.ml_per_barrel * barrel.quantity
+        elif barrel.potion_type == [0, 1, 0, 0]:
+            green_ml += barrel.ml_per_barrel * barrel.quantity
+        elif barrel.potion_type == [0, 0, 1, 0]:
+            blue_ml += barrel.ml_per_barrel * barrel.quantity
+        elif barrel.potion_type == [0, 0, 0, 1]:
+            dark_ml += barrel.ml_per_barrel * barrel.quantity
         else:
-            return "incorrect sku"
-    return "ok"
+            raise Exception("invalid type")
+    
+    with db.engine.begin() as connection:
+        connection.execute(
+            sqlalchemy.text(
+                """
+                UPDATE global_inventory 
+                SET red_ml = red_ml + :red_ml,
+                green_ml = green_ml + :green_ml,
+                blue_ml = blue_ml + :blue_ml,
+                dark_ml = dark_ml + :dark_ml,
+                gold = gold - :gold
+                """),
+                [{"red_ml": red_ml,
+                "green_ml": green_ml,
+                "blue_ml": blue_ml,
+                "dark_ml": dark_ml,
+                "gold": gold}]
+                
+            )
+    return "OK"
+
+        
+    
+    
     
 
 # Gets called once a day
@@ -60,13 +75,32 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text("SELECT gold FROM global_inventory;"))
         gold = result.first().gold
-    
+
+        result = connection.execute(sqlalchemy.text("SELECT num_red_potions FROM global_inventory;"))
+        red = result.first().num_red_potions
+
+        result = connection.execute(sqlalchemy.text("SELECT num_green_potions FROM global_inventory;"))
+        green = result.first().num_green_potions
+
+        result = connection.execute(sqlalchemy.text("SELECT num_blue_potions FROM global_inventory;"))
+        blue = result.first().num_blue_potions
+
 
     purchase = []
+    gold_spent = 0
 
 
     for barrel in wholesale_catalog:
-        if barrel.price <= gold:
+        if barrel.potion_type == [1, 0, 0, 0] and red < 10:
+            gold_spent += barrel.price
+        elif barrel.potion_type == [0, 1, 0, 0] and green < 10:
+            gold_spent += barrel.price
+        elif barrel.potion_type == [0, 0, 1, 0] and blue < 10:
+            gold_spent += barrel.price
+        else:
+            raise Exception("invalid type")
+
+        if gold_spent <= gold:
             purchase.append({
                     "sku": barrel.sku,
                     "quantity": barrel.quantity,
