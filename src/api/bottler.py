@@ -28,23 +28,14 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory]):
         dark_ml = sum(potion.quantity * potion.potion_type[3] for potion in potions_delivered)
         
         for potion in potions_delivered:
-            connection.execute(
-                sqlalchemy.text("""
-                UPDATE potions
-                SET inventory = inventory + :addition_potions
-                WHERE type = :potion_type
-                """),
-                [{"additional_potions": additional_potions,
-                "potion_type": potions_delivered.potion_type}]
-            )
+
 
             connection.execute(
                 sqlalchemy.text("""
                 UPDATE global_inventory
                 SET red_ml = red_ml - :red_ml,
                 green_ml = green_ml - :green_ml,
-                blue_ml = blue_ml - :blue_ml,
-                dark_ml = dark_ml - :dark_ml
+                blue_ml = blue_ml - :blue_ml
                 """),
                 [{"red_ml": red_ml,
                 "green_ml": green_ml,
