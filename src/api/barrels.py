@@ -97,8 +97,6 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
             gold_spent += barrel.price
         elif barrel.potion_type == [0, 0, 1, 0] and blue < 10:
             gold_spent += barrel.price
-        else:
-            raise Exception("invalid type")
 
         if gold_spent <= gold:
             purchase.append({
