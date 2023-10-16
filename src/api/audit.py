@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from src.api import auth
 import math
 from src import database as db
+import sqlalchemy
 
 router = APIRouter(
     prefix="/audit",
