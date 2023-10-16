@@ -10,6 +10,10 @@ def get_catalog():
     """
     Each unique item combination must have only a single price.
     """
+    
+    num_red = 0
+    num_green = 0
+    num_blue = 0
 
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text("SELECT num_red_potions FROM global_inventory"))
