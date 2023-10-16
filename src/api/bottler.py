@@ -79,10 +79,8 @@ def get_bottle_plan():
     # Expressed in integers from 1 to 100 that must sum up to 100.
 
     # Initial logic: bottle all barrels into red potions.
-    if red_bottle == 0 and green_bottle == 0 and blue_bottle == 0:
-           raise Exception("no ml to bottle") 
-    else:
-        return [
+
+    return [
                 {
                     "potion_type": [100, 0, 0, 0],
                     "quantity": red_bottle,
