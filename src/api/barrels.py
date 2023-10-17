@@ -73,17 +73,20 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     """ """
     print(wholesale_catalog)
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT gold FROM global_inventory"))
+        result = connection.execute(sqlalchemy.text("SELECT gold FROM potions"))
         gold = result.first().gold
 
-        result = connection.execute(sqlalchemy.text("SELECT num_red_potions FROM global_inventory"))
+        result = connection.execute(sqlalchemy.text("SELECT num_red_potions FROM potions"))
         red = result.first().num_red_potions
 
-        result = connection.execute(sqlalchemy.text("SELECT num_green_potions FROM global_inventory"))
+        result = connection.execute(sqlalchemy.text("SELECT num_green_potions FROM potions"))
         green = result.first().num_green_potions
 
-        result = connection.execute(sqlalchemy.text("SELECT num_blue_potions FROM global_inventory"))
+        result = connection.execute(sqlalchemy.text("SELECT num_blue_potions FROM potions"))
         blue = result.first().num_blue_potions
+
+        result = connection.execute(sqlalchemy.text("SELECT num_dark_potions FROM potions"))
+        dark = result.first().num_dark_potions
 
 
     purchase = []
@@ -91,19 +94,27 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
 
 
     for barrel in wholesale_catalog:
+        quantity = 0
         if barrel.potion_type == [1, 0, 0, 0] and red < 10:
             gold_spent += barrel.price
+            quantity = min(barrel.quantity, gold//barrel.price)
         elif barrel.potion_type == [0, 1, 0, 0] and green < 10:
             gold_spent += barrel.price
+            quantity = min(barrel.quantity, gold//barrel.price)
         elif barrel.potion_type == [0, 0, 1, 0] and blue < 10:
             gold_spent += barrel.price
+            quantity = min(barrel.quantity, gold//barrel.price)
+        elif barrel.potion_type == [0, 0, 0, 1] and dark < 10:
+            gold_spent += barrel.price
+            quantity = min(barrel.quantity, gold//barrel.price)
 
         if gold_spent <= gold:
             purchase.append({
                     "sku": barrel.sku,
-                    "quantity": barrel.quantity,
+                    "quantity": quantity,
                 })
     
+    print(purchase)
     return purchase
                 
             
