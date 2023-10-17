@@ -22,26 +22,29 @@ def create_cart(new_cart: NewCart):
     """ """
     global cart_id
     cart_id += 1
-    cart[cart_id] = {"name": new_cart.customer, 
-    "red": 0, 
-    "green": 0, 
-    "blue": 0, 
-    "cost": 0, 
-    "checkout": False}
+    with db.engine.begin() as connection:
+        connection.execute(sqlalchemy.text("""INSERT INTO cart (cart_id, name)
+        VALUES (:cart_id, :name)"""),
+        [{"cart_id": cart_id, "name": new_cart.customer}])
+
     return {"cart_id": cart_id}
 
 
 @router.get("/{cart_id}")
 def get_cart(cart_id: int):
     """ """
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text("""SELECT * from cart WHERE cart_id = :cart_id"""),
+        [{"cart_id": cart_id}])
+        name =result.first().name
+        cost = result.first().total_cost
+        potions = result.first().num_potions
+    
+    return [{"cart_id": cart_id,
+    "customer_name": name,
+    "total_cost": cost,
+    "total_potion_num": potions}]
 
-    return {"id": cart_id, 
-    "name": cart[cart_id]["name"],
-    "red": cart[cart_id]["red"], 
-    "green": cart[cart_id]["green"], 
-    "blue": cart[cart_id]["blue"], 
-    "cost": cart[cart_id]["cost"], 
-    "checkout": cart[cart_id]["checkout"]}
 
 
 class CartItem(BaseModel):

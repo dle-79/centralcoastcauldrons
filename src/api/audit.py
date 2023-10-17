@@ -15,28 +15,25 @@ router = APIRouter(
 def get_inventory():
     """ """
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT gold FROM global_inventory;"))
+        result = connection.execute(sqlalchemy.text("SELECT gold FROM global_inventory"))
         gold = result.first().gold
 
-        result = connection.execute(sqlalchemy.text("SELECT num_red_potions FROM potions;"))
-        red = result.first().num_red_potions
+        result = connection.execute(sqlalchemy.text("SELECT SUM(inventory) AS bottles FROM potions"))
+        bottle = result.first().bottles
 
-        result = connection.execute(sqlalchemy.text("SELECT num_green_potions FROM potions;"))
-        green = result.first().num_green_potions
-
-        result = connection.execute(sqlalchemy.text("SELECT num_blue_potions FROM potions;"))
-        blue = result.first().num_blue_potions
-
-        result = connection.execute(sqlalchemy.text("SELECT num_red_ml FROM global_inventory;"))
+        result = connection.execute(sqlalchemy.text("SELECT num_red_ml FROM global_inventory"))
         red_ml = result.first().num_red_ml
 
-        result = connection.execute(sqlalchemy.text("SELECT num_green_ml FROM global_inventory;"))
+        result = connection.execute(sqlalchemy.text("SELECT num_green_ml FROM global_inventory"))
         green_ml = result.first().num_green_ml
 
-        result = connection.execute(sqlalchemy.text("SELECT num_blue_ml FROM global_inventory;"))
+        result = connection.execute(sqlalchemy.text("SELECT num_blue_ml FROM global_inventory"))
         blue_ml = result.first().num_blue_ml
+
+        result = connection.execute(sqlalchemy.text("SELECT num_dark_ml FROM global_inventory"))
+        dark_ml = result.first().num_dark_ml
     
-    return {"number_of_potions": red+green+blue, "ml_in_barrels": red_ml + green_ml + blue_ml, "gold": gold}
+    return {"number_of_potions": bottle, "ml_in_barrels": red_ml + green_ml + blue_ml + dark_ml, "gold": gold}
 
 class Result(BaseModel):
     gold_match: bool
