@@ -50,6 +50,7 @@ def get_catalog():
                 "price": 50,
                 "potion_type": [0, 0, 100, 0],
             })
+    print(catalog)
     
     if catalog == []:
         return "no potions"
