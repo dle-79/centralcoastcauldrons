@@ -75,11 +75,11 @@ class CartCheckout(BaseModel):
 def checkout(cart_id: int, cart_checkout: CartCheckout):
     """ """
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT num_red_potions FROM global_inventory"))
+        result = connection.execute(sqlalchemy.text("SELECT num_red_potions FROM potions"))
         num_red = result.first().num_red_potions
-        result = connection.execute(sqlalchemy.text("SELECT num_green_potions FROM global_inventory"))
+        result = connection.execute(sqlalchemy.text("SELECT num_green_potions FROM potions"))
         num_green = result.first().num_green_potions
-        result = connection.execute(sqlalchemy.text("SELECT num_blue_potions FROM global_inventory"))
+        result = connection.execute(sqlalchemy.text("SELECT num_blue_potions FROM potions"))
         num_blue = result.first().num_blue_potions
 
     red_purchase = cart[cart_id]["red"]
@@ -91,8 +91,9 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
         return "potions unavailable"
     
     with db.engine.begin() as connection:
-        connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_red_potions = num_red_potions - " + str(red_purchase) + 
+        connection.execute(sqlalchemy.text("UPDATE potions SET num_red_potions = num_red_potions - " + str(red_purchase) + 
         ", num_green_potions = num_green_potions - " + str(green_purchase) + ", num_blue_potions = num_blue_potions - " +
-        str(blue_purchase) + ", gold = gold + " + str(gold_purchase)))
+        str(blue_purchase)))
+        connection.execute(sqlalchemy.text("UPDATE global_inventory SET gold = gold + " + str(gold_purchase)))
 
     return {"total_potions_bought": red_purchase + green_purchase + blue_purchase, "total_gold_paid": gold_purchase}
