@@ -21,10 +21,10 @@ def get_inventory():
         result = connection.execute(sqlalchemy.text("SELECT num_red_potions FROM potions;"))
         red = result.first().num_red_potions
 
-        result = connection.execute(sqlalchemy.text("SELECT num_green_potions FROM global_inventory;"))
+        result = connection.execute(sqlalchemy.text("SELECT num_green_potions FROM potions;"))
         green = result.first().num_green_potions
 
-        result = connection.execute(sqlalchemy.text("SELECT num_blue_potions FROM global_inventory;"))
+        result = connection.execute(sqlalchemy.text("SELECT num_blue_potions FROM potions;"))
         blue = result.first().num_blue_potions
 
         result = connection.execute(sqlalchemy.text("SELECT num_red_ml FROM global_inventory;"))
