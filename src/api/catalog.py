@@ -16,11 +16,11 @@ def get_catalog():
     num_blue = 0
 
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT num_red_potions FROM global_inventory"))
+        result = connection.execute(sqlalchemy.text("SELECT num_red_potions FROM potions"))
         num_red = result.first().num_red_potions
-        result = connection.execute(sqlalchemy.text("SELECT num_green_potions FROM global_inventory"))
+        result = connection.execute(sqlalchemy.text("SELECT num_green_potions FROM potions"))
         num_green = result.first().num_green_potions
-        result = connection.execute(sqlalchemy.text("SELECT num_blue_potions FROM global_inventory"))
+        result = connection.execute(sqlalchemy.text("SELECT num_blue_potions FROM potions"))
         num_blue = result.first().num_blue_potions
 
     # Can return a max of 20 items.
