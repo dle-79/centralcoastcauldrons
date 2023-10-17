@@ -17,6 +17,7 @@ create table
     gold integer not null,
     num_green_ml integer null default 0,
     num_blue_ml integer null default 0,
+    num_dark_ml integer null,
     constraint global_inventory_pkey primary key (gold)
   ) tablespace pg_default;
 
