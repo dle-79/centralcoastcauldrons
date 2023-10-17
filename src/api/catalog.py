@@ -26,10 +26,7 @@ def get_catalog():
                 "potion_type": [potion.num_red_ml, potion.num_green_ml, potion.num_blue_ml, potion.num_dark_ml],
             })
     
-    if catalog == []:
-        return "no potions"
-    else:
-        return catalog
+    return catalog
 
 
 
