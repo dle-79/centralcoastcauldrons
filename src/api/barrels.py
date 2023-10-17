@@ -73,8 +73,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     """ """
     print(wholesale_catalog)
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("""SELECT gold, 
-        num_red_ml, num_green_ml, num_blue_ml, num_dark_ml FROM global_inventory"""))
+        result = connection.execute(sqlalchemy.text("""SELECT * FROM global_inventory"""))
         gold = result.first().gold
         red = result.first().num_red_ml
         green = result.first().num_green_ml
@@ -89,17 +88,17 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     for barrel in wholesale_catalog:
         quantity = 0
         if barrel.potion_type == [1, 0, 0, 0] and red < 500:
-            gold_spent += barrel.price
             quantity = min(barrel.quantity, gold//barrel.price)
+            gold_spent += barrel.price * quantity
         elif barrel.potion_type == [0, 1, 0, 0] and green < 500:
-            gold_spent += barrel.price
             quantity = min(barrel.quantity, gold//barrel.price)
+            gold_spent += barrel.price * quantity
         elif barrel.potion_type == [0, 0, 1, 0] and blue < 500:
-            gold_spent += barrel.price
             quantity = min(barrel.quantity, gold//barrel.price)
+            gold_spent += barrel.price * quantity
         elif barrel.potion_type == [0, 0, 0, 1] and dark < 500:
-            gold_spent += barrel.price
             quantity = min(barrel.quantity, gold//barrel.price)
+            gold_spent += barrel.price * quantity
 
         if gold_spent <= gold:
             purchase.append({
