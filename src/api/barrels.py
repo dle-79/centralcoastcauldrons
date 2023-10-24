@@ -93,11 +93,12 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         result = connection.execute(sqlalchemy.text("""SELECT SUM(gold_change) AS gold FROM account_gold_ledger_entries"""))
         gold = result.first().gold
 
-        result = connection.execute(sqlalchemy.text("""SELECT SUM(*) AS gold FROM account_ml_ledger_entries"""))
-        red = result.first().red_ml_change
-        green = result.first().green_ml_change
-        blue = result.first().blue_ml_change
-        dark = result.first().dark_ml_change
+        result = connection.execute(sqlalchemy.text("""SELECT SUM(red_ml_change) AS red, SUM(green_ml_change) AS green,
+        SUM(blue_ml_change) AS blue, SUM(dark_ml_change) AS dark FROM account_ml_ledger_entries"""))
+        red = result.first().red
+        green = result.first().green
+        blue = result.first().blue
+        dark = result.first().dark
 
 
     purchase = []
