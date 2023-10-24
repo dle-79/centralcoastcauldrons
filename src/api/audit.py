@@ -15,25 +15,21 @@ router = APIRouter(
 def get_inventory():
     """ """
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT gold FROM global_inventory"))
+        result = connection.execute(sqlalchemy.text("""SELECT SUM(gold_change) AS gold FROM account_gold_ledger_entries"""))
         gold = result.first().gold
 
-        result = connection.execute(sqlalchemy.text("SELECT SUM(inventory) AS bottles FROM potions"))
-        bottle = result.first().bottles
+        result = connection.execute(sqlalchemy.text("""SELECT SUM(red_ml_change) AS red, SUM(green_ml_change) AS green, SUM(blue_ml_change) AS blue,
+        SUM(dark_ml_change) AS dark
+        FROM account_ml_ledger_entries"""))
+        red_ml = result.first().red
+        green_ml = result.first().green
+        blue_ml = result.first().blue
+        dark_ml = result.first().dark
 
-        result = connection.execute(sqlalchemy.text("SELECT num_red_ml FROM global_inventory"))
-        red_ml = result.first().num_red_ml
-
-        result = connection.execute(sqlalchemy.text("SELECT num_green_ml FROM global_inventory"))
-        green_ml = result.first().num_green_ml
-
-        result = connection.execute(sqlalchemy.text("SELECT num_blue_ml FROM global_inventory"))
-        blue_ml = result.first().num_blue_ml
-
-        result = connection.execute(sqlalchemy.text("SELECT num_dark_ml FROM global_inventory"))
-        dark_ml = result.first().num_dark_ml
+        result = connection.execute(sqlalchemy.text("""SELECT SUM(potion_change) AS potion FROM account_potion_ledger_entries"""))
+        potion = result.first().potion
     
-    return {"number_of_potions": bottle, "ml_in_barrels": red_ml + green_ml + blue_ml + dark_ml, "gold": gold}
+    return {"number_of_potions": potion, "ml_in_barrels": red_ml + green_ml + blue_ml + dark_ml, "gold": gold}
 
 class Result(BaseModel):
     gold_match: bool

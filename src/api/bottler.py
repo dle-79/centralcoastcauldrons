@@ -19,13 +19,15 @@ class PotionInventory(BaseModel):
 def post_deliver_bottles(potions_delivered: list[PotionInventory]):
     """ """
     print(potions_delivered)
+
+    additional_potions = sum(potion.quantity for potion in potions_delivered)
+    red_ml = sum(potion.quantity * potion.potion_type[0] for potion in potions_delivered)
+    green_ml = sum(potion.quantity * potion.potion_type[1] for potion in potions_delivered)
+    blue_ml = sum(potion.quantity * potion.potion_type[2] for potion in potions_delivered)
+    dark_ml = sum(potion.quantity * potion.potion_type[3] for potion in potions_delivered)
+
     with db.engine.begin() as connection:
     
-        additional_potions = sum(potion.quantity for potion in potions_delivered)
-        red_ml = sum(potion.quantity * potion.potion_type[0] for potion in potions_delivered)
-        green_ml = sum(potion.quantity * potion.potion_type[1] for potion in potions_delivered)
-        blue_ml = sum(potion.quantity * potion.potion_type[2] for potion in potions_delivered)
-        dark_ml = sum(potion.quantity * potion.potion_type[3] for potion in potions_delivered)
         
         for potion in potions_delivered:
             connection.execute(
@@ -38,18 +40,43 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory]):
             )
 
             connection.execute(
-                sqlalchemy.text("""
-                UPDATE global_inventory
-                SET num_red_ml = num_red_ml - :red_ml,
-                num_green_ml = num_green_ml - :green_ml,
-                num_blue_ml = num_blue_ml - :blue_ml,
-                num_dark_ml = num_dark_ml - :dark_ml
+            sqlalchemy.text(
+                """
+                INSERT INTO account_transactions (description)
+                VALUES (used :red_ml red ml, :green_ml green ml, :blue_ml blue ml, 
+                and :dark_ml dark ml to make :num potion)
                 """),
                 [{"red_ml": red_ml,
                 "green_ml": green_ml,
                 "blue_ml": blue_ml,
-                "dark_ml": dark_ml}]
+                "dark_ml": dark_ml,
+                "num": additional_potions}]  
             )
+
+            connection.execute(
+            sqlalchemy.text(
+                """
+                INSERT INTO account_ml_ledger_entry (red_ml_change, green_ml_change, blue_ml_change, dark_ml_change)
+                VALUES (:red_ml, :green_ml, :blue_ml, :dark_ml)
+                """),
+                [{"red_ml": red_ml * -1,
+                "green_ml": green_ml * -1,
+                "blue_ml": blue_ml * -1,
+                "dark_ml": dark_ml * -1}] 
+            )
+
+            connection.execute(
+            sqlalchemy.text(
+                """
+                INSERT INTO account_potion_ledger_entry (potion_change, potion_type)
+                VALUES (:potions, :potion_type)
+                )
+                """),
+                [{"potions": potion.quantity,
+                "potion_type": potion.potion_type}] 
+            )
+
+
 
     return "OK"
 
@@ -60,17 +87,11 @@ def get_bottle_plan():
     Go from barrel to bottle.
     """
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT num_red_ml FROM global_inventory"))
-        red_ml = result.first().num_red_ml
-
-        result = connection.execute(sqlalchemy.text("SELECT num_green_ml FROM global_inventory"))
-        green_ml = result.first().num_green_ml
-
-        result = connection.execute(sqlalchemy.text("SELECT num_blue_ml FROM global_inventory"))
-        blue_ml = result.first().num_blue_ml
-
-        result = connection.execute(sqlalchemy.text("SELECT num_dark_ml FROM global_inventory"))
-        dark_ml = result.first().num_dark_ml
+        result = connection.execute(sqlalchemy.text("""SELECT SUM(*) AS gold FROM account_ml_ledger_entries"""))
+        red_ml = result.first().red_ml_change
+        green_ml = result.first().green_ml_change
+        blue_ml = result.first().blue_ml_change
+        dark_ml = result.first().dark_ml_change
 
         potions = connection.execute(sqlalchemy.text("SELECT * FROM potions")).all()
 

@@ -23,7 +23,7 @@ def post_deliver_barrels(barrels_delivered: list[Barrel]):
     """ """
     print(barrels_delivered)
     
-    gold = 0
+    gold_paid = 0
     red_ml = 0
     green_ml = 0
     blue_ml = 0
@@ -46,19 +46,36 @@ def post_deliver_barrels(barrels_delivered: list[Barrel]):
         connection.execute(
             sqlalchemy.text(
                 """
-                UPDATE global_inventory 
-                SET red_ml = red_ml + :red_ml,
-                green_ml = green_ml + :green_ml,
-                blue_ml = blue_ml + :blue_ml,
-                dark_ml = dark_ml + :dark_ml,
-                gold = gold - :gold
+                INSERT INTO account_transactions (description)
+                VALUES (purchased :red_ml red ml, :green_ml green ml, :blue_ml blue ml, 
+                and :dark_ml dark ml for :gold gold)
                 """),
                 [{"red_ml": red_ml,
                 "green_ml": green_ml,
                 "blue_ml": blue_ml,
                 "dark_ml": dark_ml,
-                "gold": gold}]
-                
+                "gold": gold_paid}]  
+            )
+
+        connection.execute(
+            sqlalchemy.text(
+                """
+                INSERT INTO account_ml_ledger_entry (red_ml_change, green_ml_change, blue_ml_change, dark_ml_change)
+                VALUES (:red_ml, :green_ml, :blue_ml, :dark_ml)
+                """),
+                [{"red_ml": red_ml,
+                "green_ml": green_ml,
+                "blue_ml": blue_ml,
+                "dark_ml": dark_ml}] 
+            ) 
+
+        connection.execute(
+            sqlalchemy.text(
+                """
+                INSERT INTO account_gold_ledger_entry (gold_change)
+                VALUES (:gold)
+                """),
+                [{"gold": gold_paid}]
             )
     return "OK"
 
@@ -73,12 +90,14 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     """ """
     print(wholesale_catalog)
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("""SELECT * FROM global_inventory"""))
+        result = connection.execute(sqlalchemy.text("""SELECT SUM(gold_change) AS gold FROM account_gold_ledger_entries"""))
         gold = result.first().gold
-        red = result.first().num_red_ml
-        green = result.first().num_green_ml
-        blue = result.first().num_blue_ml
-        dark = result.first().num_dark_ml
+
+        result = connection.execute(sqlalchemy.text("""SELECT SUM(*) AS gold FROM account_ml_ledger_entries"""))
+        red = result.first().red_ml_change
+        green = result.first().green_ml_change
+        blue = result.first().blue_ml_change
+        dark = result.first().dark_ml_change
 
 
     purchase = []
