@@ -24,7 +24,10 @@ def create_cart(new_cart: NewCart):
     cart_id += 1
     with db.engine.begin() as connection:
         connection.execute(sqlalchemy.text("""INSERT INTO cart (cart_id, name)
-        VALUES (:cart_id, :name)"""),
+        VALUES (:cart_id, :name);
+        INSERT INTO account (name)
+        VALUES (:name)
+        """),
         [{"cart_id": cart_id, "name": new_cart.customer}])
 
     return {"cart_id": cart_id}
@@ -85,8 +88,8 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
     """ """
     with db.engine.begin() as connection:
         connection.execute(sqlalchemy.text("""
-        UPDATE potions
-        SET inventory = inventory - cart_item.quantity
+        INSERT INTO account_potion_ledger_entry (potion_change)
+        VALUES (num_potion)
         FROM cart_item
         WHERE potions.sku = cart_item.potion_sku :quantity <= potions.inventory
         """),
@@ -94,8 +97,9 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
     
     with db.engine.begin() as connection:
         connection.execute(sqlalchemy.text("""
-        UPDATE global_inventory
-        SET gold = gold + carts.total_cost
+
+        INSERT INTO account_gold_ledger_entry (gold_change)
+        VALUES (cart.total_cost)
         FROM cart
         WHERE cart.cart_id = :cart_id
         """),
