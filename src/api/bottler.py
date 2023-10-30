@@ -20,16 +20,17 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory]):
     """ """
     print(potions_delivered)
 
-    additional_potions = sum(potion.quantity for potion in potions_delivered)
-    red_ml = sum(potion.quantity * potion.potion_type[0] for potion in potions_delivered)
-    green_ml = sum(potion.quantity * potion.potion_type[1] for potion in potions_delivered)
-    blue_ml = sum(potion.quantity * potion.potion_type[2] for potion in potions_delivered)
-    dark_ml = sum(potion.quantity * potion.potion_type[3] for potion in potions_delivered)
+    
 
     with db.engine.begin() as connection:
     
         
         for potion in potions_delivered:
+            red_ml = potion.potion_type[0]
+            green_ml = potion.potion_type[1]
+            blue_ml = potion.potion_type[2]
+            dark_ml = potion.potion_type[3]
+
             connection.execute(
                 sqlalchemy.text("""
                 UPDATE potions
@@ -87,14 +88,29 @@ def get_bottle_plan():
     Go from barrel to bottle.
     """
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("""SELECT SUM(*) AS gold FROM account_ml_ledger_entries"""))
-        red_ml = result.first().red_ml_change
-        green_ml = result.first().green_ml_change
-        blue_ml = result.first().blue_ml_change
-        dark_ml = result.first().dark_ml_change
+        result = connection.execute(sqlalchemy.text("""SELECT SUM(red_ml_change) AS red_ml,
+        SUM(green_ml_change) AS green_ml,
+        SUM(blue_ml_change) AS blue_ml,
+        SUM(dark_ml_change) AS dark_ml
+        FROM account_ml_ledger_entries"""))
+        red_ml = result.first().red_ml
+        green_ml = result.first().green_ml
+        blue_ml = result.first().blue_ml
+        dark_ml = result.first().dark_ml
 
         potions = connection.execute(sqlalchemy.text("SELECT * FROM potions")).all()
 
+    if red_ml is None:
+        red_ml = 0
+
+    if green_ml is None:
+        green_ml = 0
+
+    if blue_ml is None:
+        blue_ml = 0
+    
+    if dark_ml is None:
+        dark_ml = 0
     
     bottles = []
     # Each bottle has a quantity of what proportion of red, blue, and
@@ -103,14 +119,18 @@ def get_bottle_plan():
 
     # Initial logic: bottle all barrels into red potions.
     for potion in potions:
-        inventory = potion.inventory
+        with db.engine.begin() as connection:
+            result = connection.execute(sqlalchemy.text("""SELECT SUM(potion_change) AS potion_quant FROM account_potion_ledger_entries WHERE potion_sku = :potion_sku"""),
+            [{"potion_sku": potion.potion_sku}]).first()
+        quant = result.potion_quant
+        new_bottles = 0
         bottled = False
         red_bot = 10000
         green_bot = 10000
         blue_bot = 10000
         dark_bot = 10000
 
-        if (red_ml >= potion.num_red_ml and green_ml >= potion.num_green_ml and blue_ml >= potion.num_blue_ml and dark_ml >= potion.num_dark_ml ):
+        if (red_ml >= potion.num_red_ml and green_ml >= potion.num_green_ml and blue_ml >= potion.num_blue_ml and dark_ml >= potion.num_dark_ml and quant < 5):
             if (potion.num_red_ml != 0):
                 red_bot = red_ml//potion.num_red_ml
             if (potion.num_green_ml != 0):
@@ -119,12 +139,20 @@ def get_bottle_plan():
                 blue_bot = blue_ml//potion.num_blue_ml
             if (potion.num_dark_ml != 0):
                 dark_bot = dark_ml//potion.num_dark_ml
-            inventory += min(red_bot, green_bot, blue_bot, dark_bot)
+            new_bottles = min(red_bot, green_bot, blue_bot, dark_bot)
+            red_ml -= potion.num_red_ml * new_bottles
+            green_ml -= potion.num_green_ml * new_bottles
+            blue_ml -= potion.num_blue_ml * new_bottles
+            dark_ml -= potion.num_dark_ml * new_bottles
             bottled = True
             
         
         if bottled == True:
             bottles.append(
                 {"potion_type": [potion.num_red_ml, potion.num_green_ml, potion.num_blue_ml, potion.num_dark_ml],
-                "quantity": inventory}
+                "quantity": new_bottles + quant}
             )
+    
+    if len(bottles)== 0:
+        return []
+    return bottles

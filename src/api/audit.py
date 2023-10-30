@@ -28,6 +28,25 @@ def get_inventory():
 
         result = connection.execute(sqlalchemy.text("""SELECT SUM(potion_change) AS potion FROM account_potion_ledger_entries"""))
         potion = result.first().potion
+
+    if red_ml is None:
+        red_ml = 0
+
+    if green_ml is None:
+        green_ml = 0
+
+    if blue_ml is None:
+        blue_ml = 0
+    
+    if dark_ml is None:
+        dark_ml = 0
+    
+    if gold is None:
+        gold = 0
+    
+    if potion is None:
+        potion = 0
+    
     
     return {"number_of_potions": potion, "ml_in_barrels": red_ml + green_ml + blue_ml + dark_ml, "gold": gold}
 
