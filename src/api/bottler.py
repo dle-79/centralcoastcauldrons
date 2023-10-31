@@ -124,6 +124,8 @@ def get_bottle_plan():
             result = connection.execute(sqlalchemy.text("""SELECT SUM(potion_change) AS potion_quant FROM account_potion_ledger_entries WHERE potion_sku = :potion_sku"""),
             [{"potion_sku": potion.sku}]).first()
         quant = result.potion_quant
+        if quant is None:
+            quant = 0
         new_bottles = 0
         bottled = False
         red_bot = 10000

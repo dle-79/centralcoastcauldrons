@@ -106,17 +106,17 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         blue = result.blue
         dark = result.dark
     
-    if red_ml is None:
-        red_ml = 0
+    if red is None:
+        red = 0
 
-    if green_ml is None:
-        green_ml = 0
+    if green is None:
+        green = 0
 
-    if blue_ml is None:
-        blue_ml = 0
+    if blue is None:
+        blue = 0
     
-    if dark_ml is None:
-        dark_ml = 0
+    if dark is None:
+        dark = 0
 
     if gold is None:
         gold = 0
@@ -131,19 +131,19 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         if barrel.potion_type == [1, 0, 0, 0] and red < 500:
             quantity = min(barrel.quantity, gold//barrel.price)
             gold_spent += barrel.price * quantity
-            red_ml += barrel.ml_per_barrel * quantity
+            red += barrel.ml_per_barrel * quantity
         elif barrel.potion_type == [0, 1, 0, 0] and green < 500:
             quantity = min(barrel.quantity, gold//barrel.price)
             gold_spent += barrel.price * quantity
-            green_ml += barrel.ml_per_barrel * quantity
+            green += barrel.ml_per_barrel * quantity
         elif barrel.potion_type == [0, 0, 1, 0] and blue < 500:
             quantity = min(barrel.quantity, gold//barrel.price)
             gold_spent += barrel.price * quantity
-            blue_ml += barrel.ml_per_barrel * quantity
+            blue += barrel.ml_per_barrel * quantity
         elif barrel.potion_type == [0, 0, 0, 1] and dark < 500:
             quantity = min(barrel.quantity, gold//barrel.price)
             gold_spent += barrel.price * quantity
-            dark_ml += barrel.ml_per_barrel * quantity
+            dark += barrel.ml_per_barrel * quantity
 
         if gold_spent <= gold:
             purchase.append({
