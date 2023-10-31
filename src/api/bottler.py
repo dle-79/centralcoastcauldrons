@@ -37,7 +37,7 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory]):
             sqlalchemy.text(
                 """
                 INSERT INTO account_transactions (description)
-                VALUES (made :quantity potion that are [:red_ml, :green_ml, :blue_ml, :dark_ml])
+                VALUES ("made :quantity potion that are [:red_ml, :green_ml, :blue_ml, :dark_ml]")
                 RETURNING id
                 """),
                 [{"red_ml": red_ml,
@@ -50,7 +50,7 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory]):
         connection.execute(
             sqlalchemy.text(
                 """
-                INSERT INTO account_ml_ledger_entry (id, red_ml_change, green_ml_change, blue_ml_change, dark_ml_change)
+                INSERT INTO account_ml_ledger_entry (transaction_id, red_ml_change, green_ml_change, blue_ml_change, dark_ml_change)
                 VALUES (:id, :red_ml, :green_ml, :blue_ml, :dark_ml)
                 """),
                 [{"id": id,
@@ -63,7 +63,7 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory]):
         connection.execute(
             sqlalchemy.text(
                 """
-                INSERT INTO account_potion_ledger_entry (id, potion_change, potion_sku)
+                INSERT INTO account_potion_ledger_entry (transaction_id, potion_change, potion_sku)
                 SELECT :id, :quantity, potions.sku
                 FROM potions
                 WHERE potions.num_red = :red_ml, potions.num_green = :green_ml,
