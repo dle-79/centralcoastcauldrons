@@ -81,7 +81,7 @@ def post_deliver_barrels(barrels_delivered: list[Barrel]):
                 VALUES (:id, :gold)
                 """),
                 [{"id": id,
-                "gold": gold_paid}]
+                "gold": -gold_paid}]
             )
     return "OK"
 
