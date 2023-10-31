@@ -24,9 +24,9 @@ def get_catalog():
 
         with db.engine.begin() as connection:
             result = connection.execute(sqlalchemy.text("SELECT SUM(potion_change) AS quantity FROM account_potion_ledger_entries WHERE potion_sku = :potion_sku"),
-            [{"potion_sku": potion.potion_sku}]).first()
+            [{"potion_sku": potion.sku}]).first()
 
-        quant = result.quant
+        quant = result.quantity
         if quant is None:
             quant = 0
         
@@ -34,7 +34,7 @@ def get_catalog():
             catalog.append({
                     "sku": potion.sku,
                     "name": potion.name,
-                    "quantity": potion.inventory,
+                    "quantity": quant,
                     "price": potion.price,
                     "potion_type": [potion.num_red_ml, potion.num_green_ml, potion.num_blue_ml, potion.num_dark_ml],
                 })

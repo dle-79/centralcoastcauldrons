@@ -22,6 +22,9 @@ class Barrel(BaseModel):
 def post_deliver_barrels(barrels_delivered: list[Barrel]):
     """ """
     print(barrels_delivered)
+
+    if (len(barrels_delivered) == 0):
+        return "ok"
     
     gold_paid = 0
     red_ml = 0
@@ -43,27 +46,29 @@ def post_deliver_barrels(barrels_delivered: list[Barrel]):
             raise Exception("invalid type")
     
     with db.engine.begin() as connection:
-        connection.execute(
+        id = connection.execute(
             sqlalchemy.text(
                 """
                 INSERT INTO account_transactions (description)
                 VALUES (purchased :red_ml red ml, :green_ml green ml, :blue_ml blue ml, 
                 and :dark_ml dark ml for :gold gold)
+                RETURNING id
                 """),
                 [{"red_ml": red_ml,
                 "green_ml": green_ml,
                 "blue_ml": blue_ml,
                 "dark_ml": dark_ml,
                 "gold": gold_paid}]  
-            )
+            ).scalar_one()
 
         connection.execute(
             sqlalchemy.text(
                 """
-                INSERT INTO account_ml_ledger_entry (red_ml_change, green_ml_change, blue_ml_change, dark_ml_change)
-                VALUES (:red_ml, :green_ml, :blue_ml, :dark_ml)
+                INSERT INTO account_ml_ledger_entry (id, red_ml_change, green_ml_change, blue_ml_change, dark_ml_change)
+                VALUES (:id, :red_ml, :green_ml, :blue_ml, :dark_ml)
                 """),
-                [{"red_ml": red_ml,
+                [{"id": id,
+                "red_ml": red_ml,
                 "green_ml": green_ml,
                 "blue_ml": blue_ml,
                 "dark_ml": dark_ml}] 
@@ -72,10 +77,11 @@ def post_deliver_barrels(barrels_delivered: list[Barrel]):
         connection.execute(
             sqlalchemy.text(
                 """
-                INSERT INTO account_gold_ledger_entry (gold_change)
-                VALUES (:gold)
+                INSERT INTO account_gold_ledger_entry (id, gold_change)
+                VALUES (:id, :gold)
                 """),
-                [{"gold": gold_paid}]
+                [{"id": id,
+                "gold": gold_paid}]
             )
     return "OK"
 
@@ -90,15 +96,30 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     """ """
     print(wholesale_catalog)
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("""SELECT SUM(gold_change) AS gold FROM account_gold_ledger_entries"""))
-        gold = result.first().gold
+        result = connection.execute(sqlalchemy.text("""SELECT SUM(gold_change) AS gold FROM account_gold_ledger_entries""")).first()
+        gold = result.gold
 
         result = connection.execute(sqlalchemy.text("""SELECT SUM(red_ml_change) AS red, SUM(green_ml_change) AS green,
-        SUM(blue_ml_change) AS blue, SUM(dark_ml_change) AS dark FROM account_ml_ledger_entries"""))
-        red = result.first().red
-        green = result.first().green
-        blue = result.first().blue
-        dark = result.first().dark
+        SUM(blue_ml_change) AS blue, SUM(dark_ml_change) AS dark FROM account_ml_ledger_entries""")).first()
+        red = result.red
+        green = result.green
+        blue = result.blue
+        dark = result.dark
+    
+    if red_ml is None:
+        red_ml = 0
+
+    if green_ml is None:
+        green_ml = 0
+
+    if blue_ml is None:
+        blue_ml = 0
+    
+    if dark_ml is None:
+        dark_ml = 0
+
+    if gold is None:
+        gold = 0
 
 
     purchase = []
@@ -110,15 +131,19 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         if barrel.potion_type == [1, 0, 0, 0] and red < 500:
             quantity = min(barrel.quantity, gold//barrel.price)
             gold_spent += barrel.price * quantity
+            red_ml += barrel.ml_per_barrel * quantity
         elif barrel.potion_type == [0, 1, 0, 0] and green < 500:
             quantity = min(barrel.quantity, gold//barrel.price)
             gold_spent += barrel.price * quantity
+            green_ml += barrel.ml_per_barrel * quantity
         elif barrel.potion_type == [0, 0, 1, 0] and blue < 500:
             quantity = min(barrel.quantity, gold//barrel.price)
             gold_spent += barrel.price * quantity
+            blue_ml += barrel.ml_per_barrel * quantity
         elif barrel.potion_type == [0, 0, 0, 1] and dark < 500:
             quantity = min(barrel.quantity, gold//barrel.price)
             gold_spent += barrel.price * quantity
+            dark_ml += barrel.ml_per_barrel * quantity
 
         if gold_spent <= gold:
             purchase.append({

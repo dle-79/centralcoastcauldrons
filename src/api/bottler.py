@@ -20,7 +20,8 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory]):
     """ """
     print(potions_delivered)
 
-    
+    if (len(potions_delivered) == 0):
+        return "ok"
 
     with db.engine.begin() as connection:
     
@@ -31,51 +32,51 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory]):
             blue_ml = potion.potion_type[2]
             dark_ml = potion.potion_type[3]
 
-            connection.execute(
-                sqlalchemy.text("""
-                UPDATE potions
-                SET inventory = inventory + :additional_potions
-                WHERE type = :potion_type"""),
-                [{"additional_potions": potion.quantity,
-                "potion_type": potion.potion_type}]
-            )
 
-            connection.execute(
+        id = connection.execute(
             sqlalchemy.text(
                 """
                 INSERT INTO account_transactions (description)
-                VALUES (used :red_ml red ml, :green_ml green ml, :blue_ml blue ml, 
-                and :dark_ml dark ml to make :num potion)
+                VALUES (made :quantity potion that are [:red_ml, :green_ml, :blue_ml, :dark_ml])
+                RETURNING id
                 """),
                 [{"red_ml": red_ml,
                 "green_ml": green_ml,
                 "blue_ml": blue_ml,
                 "dark_ml": dark_ml,
-                "num": additional_potions}]  
-            )
+                "quantity": potion.quantity}]  
+            ).scalar_one()
 
-            connection.execute(
+        connection.execute(
             sqlalchemy.text(
                 """
-                INSERT INTO account_ml_ledger_entry (red_ml_change, green_ml_change, blue_ml_change, dark_ml_change)
-                VALUES (:red_ml, :green_ml, :blue_ml, :dark_ml)
+                INSERT INTO account_ml_ledger_entry (id, red_ml_change, green_ml_change, blue_ml_change, dark_ml_change)
+                VALUES (:id, :red_ml, :green_ml, :blue_ml, :dark_ml)
                 """),
-                [{"red_ml": red_ml * -1,
-                "green_ml": green_ml * -1,
-                "blue_ml": blue_ml * -1,
-                "dark_ml": dark_ml * -1}] 
-            )
+                [{"id": id,
+                "red_ml": red_ml * -potion.quantity,
+                "green_ml": green_ml * -potion.quantity,
+                "blue_ml": blue_ml * -potion.quantity,
+                "dark_ml": dark_ml * -potion.quantity}] 
+            ) 
 
-            connection.execute(
+        connection.execute(
             sqlalchemy.text(
                 """
-                INSERT INTO account_potion_ledger_entry (potion_change, potion_type)
-                VALUES (:potions, :potion_type)
-                )
+                INSERT INTO account_potion_ledger_entry (id, potion_change, potion_sku)
+                SELECT :id, :quantity, potions.sku
+                FROM potions
+                WHERE potions.num_red = :red_ml, potions.num_green = :green_ml,
+                potions.num_blue = :blue_ml, potions.num_dark = :dark_ml
                 """),
-                [{"potions": potion.quantity,
-                "potion_type": potion.potion_type}] 
+                [{"id": id,
+                "quantity": potion.quantity,
+                "red_ml": red_ml,
+                "green_ml": green_ml,
+                "blue_ml": blue_ml,
+                "dark_ml": dark_ml}]
             )
+    return "OK"
 
 
 
@@ -92,11 +93,11 @@ def get_bottle_plan():
         SUM(green_ml_change) AS green_ml,
         SUM(blue_ml_change) AS blue_ml,
         SUM(dark_ml_change) AS dark_ml
-        FROM account_ml_ledger_entries"""))
-        red_ml = result.first().red_ml
-        green_ml = result.first().green_ml
-        blue_ml = result.first().blue_ml
-        dark_ml = result.first().dark_ml
+        FROM account_ml_ledger_entries""")).first()
+        red_ml = result.red_ml
+        green_ml = result.green_ml
+        blue_ml = result.blue_ml
+        dark_ml = result.dark_ml
 
         potions = connection.execute(sqlalchemy.text("SELECT * FROM potions")).all()
 

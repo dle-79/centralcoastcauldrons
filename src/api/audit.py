@@ -15,19 +15,19 @@ router = APIRouter(
 def get_inventory():
     """ """
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("""SELECT SUM(gold_change) AS gold FROM account_gold_ledger_entries"""))
-        gold = result.first().gold
+        result = connection.execute(sqlalchemy.text("""SELECT SUM(gold_change) AS gold FROM account_gold_ledger_entries""")).first()
+        gold = result.gold
 
         result = connection.execute(sqlalchemy.text("""SELECT SUM(red_ml_change) AS red, SUM(green_ml_change) AS green, SUM(blue_ml_change) AS blue,
         SUM(dark_ml_change) AS dark
-        FROM account_ml_ledger_entries"""))
-        red_ml = result.first().red
-        green_ml = result.first().green
-        blue_ml = result.first().blue
-        dark_ml = result.first().dark
+        FROM account_ml_ledger_entries""")).first()
+        red_ml = result.red
+        green_ml = result.green
+        blue_ml = result.blue
+        dark_ml = result.dark
 
-        result = connection.execute(sqlalchemy.text("""SELECT SUM(potion_change) AS potion FROM account_potion_ledger_entries"""))
-        potion = result.first().potion
+        result = connection.execute(sqlalchemy.text("""SELECT SUM(potion_change) AS potion FROM account_potion_ledger_entries""")).first()
+        potion = result.potion
 
     if red_ml is None:
         red_ml = 0
