@@ -145,7 +145,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
             gold_spent += barrel.price * quantity
             dark += barrel.ml_per_barrel * quantity
 
-        if gold_spent <= gold:
+        if gold_spent <= gold and quantity != 0:
             purchase.append({
                     "sku": barrel.sku,
                     "quantity": quantity,
