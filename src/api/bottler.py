@@ -148,7 +148,7 @@ def get_bottle_plan():
         if bottled == True:
             bottles.append(
                 {"potion_type": [potion.num_red_ml, potion.num_green_ml, potion.num_blue_ml, potion.num_dark_ml],
-                "quantity": new_bottles + quant}
+                "quantity": new_bottles}
             )
     
     if len(bottles)== 0:
