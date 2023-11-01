@@ -63,7 +63,7 @@ def post_deliver_barrels(barrels_delivered: list[Barrel]):
         connection.execute(
             sqlalchemy.text(
                 """
-                INSERT INTO account_ml_ledger_entry (transaction_id, red_ml_change, green_ml_change, blue_ml_change, dark_ml_change)
+                INSERT INTO account_ml_ledger_entries (transaction_id, red_ml_change, green_ml_change, blue_ml_change, dark_ml_change)
                 VALUES (:id, :red_ml, :green_ml, :blue_ml, :dark_ml)
                 """),
                 [{"id": id,
@@ -76,7 +76,7 @@ def post_deliver_barrels(barrels_delivered: list[Barrel]):
         connection.execute(
             sqlalchemy.text(
                 """
-                INSERT INTO account_gold_ledger_entry (transaction_id, gold_change)
+                INSERT INTO account_gold_ledger_entries (transaction_id, gold_change)
                 VALUES (:id, :gold)
                 """),
                 [{"id": id,
