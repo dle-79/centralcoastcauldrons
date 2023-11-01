@@ -23,64 +23,59 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory]):
     if (len(potions_delivered) == 0):
         return "ok"
 
-    with db.engine.begin() as connection:
-    
+    for potion in potions_delivered:
+        red_ml = potion.potion_type[0]
+        green_ml = potion.potion_type[1]
+        blue_ml = potion.potion_type[2]
+        dark_ml = potion.potion_type[3]
+        with db.engine.begin() as connection:
         
-        for potion in potions_delivered:
-            red_ml = potion.potion_type[0]
-            green_ml = potion.potion_type[1]
-            blue_ml = potion.potion_type[2]
-            dark_ml = potion.potion_type[3]
+            id = connection.execute(
+                sqlalchemy.text(
+                    """
+                    INSERT INTO account_transactions (description)
+                    VALUES ('made :quantity potion that are [:red_ml, :green_ml, :blue_ml, :dark_ml]')
+                    RETURNING id
+                    """),
+                    [{"red_ml": red_ml,
+                    "green_ml": green_ml,
+                    "blue_ml": blue_ml,
+                    "dark_ml": dark_ml,
+                    "quantity": potion.quantity}]  
+                ).scalar_one()
 
+            connection.execute(
+                sqlalchemy.text(
+                    """
+                    INSERT INTO account_ml_ledger_entries (transaction_id, red_ml_change, green_ml_change, blue_ml_change, dark_ml_change)
+                    VALUES (:id, :red_ml, :green_ml, :blue_ml, :dark_ml)
+                    """),
+                    [{"id": id,
+                    "red_ml": red_ml * -potion.quantity,
+                    "green_ml": green_ml * -potion.quantity,
+                    "blue_ml": blue_ml * -potion.quantity,
+                    "dark_ml": dark_ml * -potion.quantity}] 
+                ) 
 
-        id = connection.execute(
-            sqlalchemy.text(
-                """
-                INSERT INTO account_transactions (description)
-                VALUES ('made :quantity potion that are [:red_ml, :green_ml, :blue_ml, :dark_ml]')
-                RETURNING id
-                """),
-                [{"red_ml": red_ml,
-                "green_ml": green_ml,
-                "blue_ml": blue_ml,
-                "dark_ml": dark_ml,
-                "quantity": potion.quantity}]  
-            ).scalar_one()
-
-        connection.execute(
-            sqlalchemy.text(
-                """
-                INSERT INTO account_ml_ledger_entries (transaction_id, red_ml_change, green_ml_change, blue_ml_change, dark_ml_change)
-                VALUES (:id, :red_ml, :green_ml, :blue_ml, :dark_ml)
-                """),
-                [{"id": id,
-                "red_ml": red_ml * -potion.quantity,
-                "green_ml": green_ml * -potion.quantity,
-                "blue_ml": blue_ml * -potion.quantity,
-                "dark_ml": dark_ml * -potion.quantity}] 
-            ) 
-
-        connection.execute(
-            sqlalchemy.text(
-                """
-                INSERT INTO account_potion_ledger_entries (transaction_id, potion_change, potion_sku)
-                SELECT :id, :quantity, potions.sku
-                FROM potions
-                WHERE potions.num_red = :red_ml, potions.num_green = :green_ml,
-                potions.num_blue = :blue_ml, potions.num_dark = :dark_ml
-                """),
-                [{"id": id,
-                "quantity": potion.quantity,
-                "red_ml": red_ml,
-                "green_ml": green_ml,
-                "blue_ml": blue_ml,
-                "dark_ml": dark_ml}]
-            )
+            connection.execute(
+                sqlalchemy.text(
+                    """
+                    INSERT INTO account_potion_ledger_entries (transaction_id, potion_change, potion_sku)
+                    VALUES (:id, :quantity, potions.sku)
+                    FROM potions
+                    WHERE potions.num_red = :red_ml AND potions.num_green = :green_ml AND
+                    potions.num_blue = :blue_ml AND potions.num_dark = :dark_ml
+                    """),
+                    [{"id": id,
+                    "quantity": potion.quantity,
+                    "red_ml": red_ml,
+                    "green_ml": green_ml,
+                    "blue_ml": blue_ml,
+                    "dark_ml": dark_ml}]
+                )
     return "OK"
 
 
-
-    return "OK"
 
 # Gets called 4 times a day
 @router.post("/plan")
