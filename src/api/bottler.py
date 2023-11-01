@@ -63,8 +63,8 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory]):
                     INSERT INTO account_potion_ledger_entries (transaction_id, potion_change, potion_sku)
                     SELECT :id, :quantity, potions.sku
                     FROM potions
-                    WHERE potions.num_red = :red_ml AND potions.num_green = :green_ml AND
-                    potions.num_blue = :blue_ml AND potions.num_dark = :dark_ml
+                    WHERE potions.num_red_ml = :red_ml AND potions.num_green_ml = :green_ml AND
+                    potions.num_blue_ml = :blue_ml AND potions.num_dark_ml = :dark_ml
                     """),
                     [{"id": id,
                     "quantity": potion.quantity,
