@@ -50,8 +50,7 @@ def post_deliver_barrels(barrels_delivered: list[Barrel]):
             sqlalchemy.text(
                 """
                 INSERT INTO account_transactions (description)
-                VALUES ("purchased :red_ml red ml, :green_ml green ml, :blue_ml blue ml, 
-                and :dark_ml dark ml for :gold gold")
+                VALUES ('purchased :red_ml red ml, :green_ml green ml, :blue_ml blue ml, and :dark_ml dark ml for :gold gold')
                 RETURNING id
                 """),
                 [{"red_ml": red_ml,

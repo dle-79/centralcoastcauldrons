@@ -37,7 +37,7 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory]):
             sqlalchemy.text(
                 """
                 INSERT INTO account_transactions (description)
-                VALUES ("made :quantity potion that are [:red_ml, :green_ml, :blue_ml, :dark_ml]")
+                VALUES ('made :quantity potion that are [:red_ml, :green_ml, :blue_ml, :dark_ml]')
                 RETURNING id
                 """),
                 [{"red_ml": red_ml,
