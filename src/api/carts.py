@@ -83,7 +83,7 @@ def create_cart(new_cart: NewCart):
 
     with db.engine.begin() as connection:
         cart_id = connection.execute(sqlalchemy.text("""INSERT INTO cart (name)
-        VALUES (:name);
+        VALUES (:name)
         RETURNING cart_id
         """),
         [{ "name": new_cart.customer}])
