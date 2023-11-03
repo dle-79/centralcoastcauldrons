@@ -87,6 +87,8 @@ def create_cart(new_cart: NewCart):
         RETURNING cart_id
         """),
         [{ "name": new_cart.customer}])
+    
+    print("create cart ok")
 
     return {"cart_id": cart_id}
 
@@ -116,6 +118,8 @@ def get_cart(cart_id: int):
         quant = 0
     if gold is None:
         gold = 0
+
+    print("get cart oK")
 
     return [{"cart_id": cart_id,
     "customer_name": name,
@@ -154,6 +158,8 @@ def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
         WHERE :quantity <= :potion_quantity and potions.sku = :item_sku
         """),
         [{"cart_id": cart_id, "item_sku": item_sku, "quantity": cart_item.quantity, "potion_quantity": quant}])
+    
+    print("set item quantity ok")
     return "OK"
     
 
