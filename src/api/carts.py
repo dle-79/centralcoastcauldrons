@@ -197,13 +197,13 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
             VALUES ('customer :cust_id bought :quant id number :potion_id potions which cost :gold')
             RETURNING transaction_id
              """),
-            [{"cust_id": cart_id, "potion_id": item.potion_id, "quant": item.quantity, "gold": potion_price.price * item.quantity}]).scalar_one()
+            [{"cust_id": cart_id, "potion_id": item.potion_id, "quant": item.quantity, "gold": potion_price * item.quantity}]).scalar_one()
 
             connection.execute(sqlalchemy.text("""
             INSERT INTO account_gold_ledger_entries (gold, transaction_id)
             VALUES (:gold, :transaction_id)
              """),
-            [{"gold": item.quantity * potion_price.price, "transaction_id": trans_id}])
+            [{"gold": item.quantity * potion_price, "transaction_id": trans_id}])
 
             connection.execute(sqlalchemy.text("""
             INSERT INTO account_potion_ledger_entries (potion_id, potion_change, transaction_id)
