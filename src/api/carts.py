@@ -190,7 +190,7 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
             FROM potions
             WHERE id = :potion_id
              """),
-            [{"potion_sku": item.potion_id}]).first()
+            [{"potion_id": item.potion_id}]).scalar_one()
 
             trans_id = connection.execute(sqlalchemy.text("""
             INSERT INTO account_transactions (description)
