@@ -181,12 +181,13 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
         SELECT * FROM cart_item
         WHERE cart_id = :cart_id
          """),
-        [{"cart_id": cart_id}])
+        [{"cart_id": cart_id}]).all()
     
     for item in cart_items:
         with db.engine.begin() as connection:
             potion = connection.execute(sqlalchemy.text("""
-            SELECT * FROM potions
+            SELECT * 
+            FROM potions
             WHERE id = :potion_id
              """),
             [{"potion_sku": item.potion_id}]).first()
