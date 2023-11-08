@@ -200,7 +200,7 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
             [{"cust_id": cart_id, "potion_id": item.potion_id, "quant": item.quantity, "gold": potion_price * item.quantity}]).scalar_one()
 
             connection.execute(sqlalchemy.text("""
-            INSERT INTO account_gold_ledger_entries (gold, transaction_id)
+            INSERT INTO account_gold_ledger_entries (gold_change, transaction_id)
             VALUES (:gold, :transaction_id)
              """),
             [{"gold": item.quantity * potion_price, "transaction_id": trans_id}])
