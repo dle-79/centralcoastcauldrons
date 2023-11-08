@@ -23,8 +23,8 @@ def get_catalog():
             break
 
         with db.engine.begin() as connection:
-            result = connection.execute(sqlalchemy.text("SELECT SUM(potion_change) AS quantity FROM account_potion_ledger_entries WHERE potion_sku = :potion_sku"),
-            [{"potion_sku": potion.sku}]).first()
+            result = connection.execute(sqlalchemy.text("SELECT SUM(potion_change) AS quantity FROM account_potion_ledger_entries WHERE potion_id = :potion_id"),
+            [{"potion_id": potion.id}]).first()
 
         quant = result.quantity
         if quant is None:

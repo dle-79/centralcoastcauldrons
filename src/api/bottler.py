@@ -60,8 +60,8 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory]):
             connection.execute(
                 sqlalchemy.text(
                     """
-                    INSERT INTO account_potion_ledger_entries (transaction_id, potion_change, potion_sku)
-                    SELECT :id, :quantity, potions.sku
+                    INSERT INTO account_potion_ledger_entries (transaction_id, potion_change, potion_id)
+                    SELECT :id, :quantity, potions.id
                     FROM potions
                     WHERE potions.num_red_ml = :red_ml AND potions.num_green_ml = :green_ml AND
                     potions.num_blue_ml = :blue_ml AND potions.num_dark_ml = :dark_ml
@@ -116,8 +116,8 @@ def get_bottle_plan():
     # Initial logic: bottle all barrels into red potions.
     for potion in potions:
         with db.engine.begin() as connection:
-            result = connection.execute(sqlalchemy.text("""SELECT SUM(potion_change) AS potion_quant FROM account_potion_ledger_entries WHERE potion_sku = :potion_sku"""),
-            [{"potion_sku": potion.sku}]).first()
+            result = connection.execute(sqlalchemy.text("""SELECT SUM(potion_change) AS potion_quant FROM account_potion_ledger_entries WHERE potion_id = :potion_id"""),
+            [{"potion_id": potion.id}]).first()
         quant = result.potion_quant
         if quant is None:
             quant = 0
