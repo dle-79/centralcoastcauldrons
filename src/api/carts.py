@@ -85,8 +85,8 @@ def create_cart(new_cart: NewCart):
         cart_id = connection.execute(sqlalchemy.text("""INSERT INTO cart (name)
         VALUES (:name)
         RETURNING cart_id
-        """).scalar_one(),
-        [{ "name": new_cart.customer}])
+        """),
+        [{ "name": new_cart.customer}]).scalar_one()
     
     print("create cart ok")
 
