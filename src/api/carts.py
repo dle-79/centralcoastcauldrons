@@ -195,7 +195,7 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
             trans_id = connection.execute(sqlalchemy.text("""
             INSERT INTO account_transactions (description)
             VALUES ('customer :cust_id bought :quant id number :potion_id potions which cost :gold')
-            RETURNING transaction_id
+            RETURNING id
              """),
             [{"cust_id": cart_id, "potion_id": item.potion_id, "quant": item.quantity, "gold": potion_price * item.quantity}]).scalar_one()
 
