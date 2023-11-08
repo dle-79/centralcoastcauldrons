@@ -87,6 +87,7 @@ def create_cart(new_cart: NewCart):
         RETURNING cart_id
         """),
         [{ "name": new_cart.customer}])
+    cart_id = int(cart_id)
     
     print("create cart ok")
 
@@ -98,7 +99,7 @@ def get_cart(cart_id: int):
     """ """
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text("""SELECT name FROM cart WHERE cart_id = :cart_id"""),
-        [{"cart_id": cart_id}]).first()
+        [{"cart_id": int(cart_id)}]).first()
         name = result.name
     
     with db.engine.begin() as connection:
@@ -110,7 +111,7 @@ def get_cart(cart_id: int):
             ON potions.id = cart_item.potion_id
             WHERE cart_item.cart_id = :cart_id
             """),
-        [{"cart_id": cart_id}]).first()
+        [{"cart_id": int(cart_id)}]).first()
         quant = result.quant
         gold = result.gold
     
@@ -121,7 +122,7 @@ def get_cart(cart_id: int):
 
     print("get cart oK")
 
-    return [{"cart_id": cart_id,
+    return [{"cart_id": int(cart_id),
     "customer_name": name,
     "total_cost": gold,
     "total_potion_num": quant}]
