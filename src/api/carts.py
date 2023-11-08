@@ -98,7 +98,7 @@ def get_cart(cart_id: int):
     """ """
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text("""SELECT name FROM cart WHERE cart_id = :cart_id"""),
-        [{"cart_id": int(cart_id)}]).first()
+        [{"cart_id": cart_id}]).first()
         name = result.name
     
     with db.engine.begin() as connection:
