@@ -144,7 +144,7 @@ def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
         ON account_potion_ledger_entries.potion_id = potions.id
         WHERE potions.sku = :item_sku
         """),
-        [{"item_sku": item_sku}]).first()
+        [{"item_sku": item_sku}]).scalar_one()
     
     print(result.quant)
     
@@ -158,7 +158,7 @@ def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
         INSERT INTO cart_item (cart_id, potion_id, quantity)
         SELECT :cart_id, account_potion_ledger_entries.id, :quantity
         FROM account_potion_ledger_entries, potions
-        WHERE :quantity <= :potion_quantity and potions.id = :item_sku
+        WHERE :quantity <= :potion_quantity and potions.sku = :item_sku
         """),
         [{"cart_id": cart_id, "item_sku": item_sku, "quantity": cart_item.quantity, "potion_quantity": quant}])
     
