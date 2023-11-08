@@ -144,9 +144,9 @@ def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
         ON account_potion_ledger_entries.potion_id = potions.id
         WHERE potions.sku = :item_sku
         """),
-        [{"item_sku": item_sku}]).scalar_one()
+        [{"item_sku": item_sku}]).first()
     
-    print(result.quant)
+
     
     quant = result.quant
     if quant is None:
