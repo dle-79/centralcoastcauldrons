@@ -138,12 +138,15 @@ def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
     
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text("""
-        SELECT SUM(account_potion_ledger_entries.potion_change) AS quant
+        SELECT SUM(potion_change) AS quant
         FROM account_potion_ledger_entries
         JOIN potions
-        ON account_potion_ledger_entries.potion_id = potions.id AND potions.sku = :item_sku
+        ON account_potion_ledger_entries.potion_id = potions.id
+        WHERE potions.sku = :item_sku
         """),
         [{"item_sku": item_sku}]).first()
+    
+    print(result.quant)
     
     quant = result.quant
     if quant is None:
