@@ -41,6 +41,7 @@ def get_catalog():
             count += 1
     if len(catalog) == 0:
         return []
+    print(catalog)   
     return catalog
 
 
