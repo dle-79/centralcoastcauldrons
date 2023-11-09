@@ -203,7 +203,7 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
             INSERT INTO account_gold_ledger_entries (gold_change, transaction_id)
             VALUES (:gold, :transaction_id)
              """),
-            [{"gold": item.quantity * potion_price, "transaction_id": trans_id}])
+            [{"gold": item.quantity * potion_price.price, "transaction_id": trans_id}])
 
             connection.execute(sqlalchemy.text("""
             INSERT INTO account_potion_ledger_entries (potion_id, potion_change, transaction_id)
