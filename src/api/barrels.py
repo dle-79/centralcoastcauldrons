@@ -127,7 +127,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
 
     for barrel in wholesale_catalog:
         quantity = 0
-        if barrel.potion_type == [1, 0, 0, 0] and red < 500:
+        if barrel.potion_type == [1, 0, 0, 0] and red > 500:
             quantity = min(barrel.quantity, gold//barrel.price)
             gold_spent += barrel.price * quantity
             red += barrel.ml_per_barrel * quantity
