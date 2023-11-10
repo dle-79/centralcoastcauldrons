@@ -156,7 +156,7 @@ def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
     with db.engine.begin() as connection:
         connection.execute(sqlalchemy.text("""
         INSERT INTO cart_item (cart_id, potion_id, quantity)
-        SELECT :cart_id, account_potion_ledger_entries.potion_id, :quantity
+        SELECT :cart_id, potions.potion_id, :quantity
         FROM account_potion_ledger_entries
         JOIN potions
         ON account_potion_ledger_entries.potion_id = potions.id
