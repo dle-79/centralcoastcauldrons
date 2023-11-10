@@ -157,7 +157,9 @@ def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
         connection.execute(sqlalchemy.text("""
         INSERT INTO cart_item (cart_id, potion_id, quantity)
         SELECT :cart_id, account_potion_ledger_entries.potion_id, :quantity
-        FROM account_potion_ledger_entries, potions
+        FROM account_potion_ledger_entries
+        JOIN potions
+        ON account_potion_ledger_entries.potion_id = potions.id
         WHERE :quantity <= :potion_quantity AND potions.sku = :item_sku
         """),
         [{"cart_id": cart_id, "item_sku": item_sku, "quantity": cart_item.quantity, "potion_quantity": quant}])
@@ -165,6 +167,8 @@ def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
     print("set item quantity ok")
     return "OK"
     
+
+        
 
 
 
