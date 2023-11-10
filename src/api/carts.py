@@ -190,6 +190,9 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
              """),
             [{"potion_id": item.potion_id}]).first()
 
+            if potion_price.price == None:
+                potion_price.price = 0
+
             trans_id = connection.execute(sqlalchemy.text("""
             INSERT INTO account_transactions (description)
             VALUES ('customer :cust_id bought :quant id number :potion_id potions which cost :gold')
